@@ -21,7 +21,20 @@ fully offline, no cloud service.
 | You sleep right through to the hard deadline | Full-intensity alarm, no more waiting |
 | A sensor dies or is unplugged | **Failsafe**: degrades to a plain fixed-time alarm at the deadline. It never fails silent. |
 
-Dismiss with Key 1, snooze with Key 2, or from the web UI.
+### The 12 keys
+
+| | col 1 | col 2 | col 3 | col 4 |
+|---|---|---|---|---|
+| **row 1** (front) | `DISMISS` | `SNOOZE` | `LIGHT` | `SKIP` |
+| **row 2** | `OPEN −` | `OPEN +` | `DEAD −` | `DEAD +` |
+| **row 3** (back) | `PAGE` | `SOFT` | `LOUD` | `SAVE` |
+
+Row 1 is what you hit half-asleep. Rows 2 and 3 are setup you do awake: move
+the window and deadline in 5-minute steps, page through status / window /
+sleep-debt screens, test the alarm, save to flash. Everything is also on the
+web UI.
+
+![keypad legend](images/keymap.png)
 
 ## How it decides
 

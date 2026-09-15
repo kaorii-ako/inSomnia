@@ -41,6 +41,7 @@ public:
 
     void dismiss();
     void snooze();
+    void skipTonight();
     void testGentle();
     void testHard();
     void stopTest();

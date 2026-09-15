@@ -337,3 +337,55 @@ the same dimensions by hand. If I change the CAD I have to change both.
 ![render matched to the CAD](images/render-hero.png)
 
 **Total time spent: 4 hours**
+
+# September 15: Twelve buttons, and what they're actually for
+
+Looked at the render and thought: why does an alarm clock have a numpad?
+
+Checked the firmware. Twelve keys on the board, and `grep` found exactly **two**
+`wasJustPressed` calls — dismiss and snooze. Ten buttons doing nothing.
+
+They came from the original schematic, which already had SW1–SW12 and two
+74HC165 shift registers before I started. I inherited it and never asked whether
+the thing needed that many. Two options: use them or lose them. Losing them
+means re-laying-out a board that's already DRC-clean, so I used them.
+
+| | col 1 | col 2 | col 3 | col 4 |
+|---|---|---|---|---|
+| row 1 | DISMISS | SNOOZE | LIGHT | SKIP |
+| row 2 | OPEN − | OPEN + | DEAD − | DEAD + |
+| row 3 | PAGE | SOFT | LOUD | SAVE |
+
+Front row is the half-asleep row — the stuff you hit without opening your eyes.
+Back two rows are setup: move the window and deadline in 5-minute steps, page
+between status / window / sleep-debt screens, fire a test alarm, save to flash.
+
+The one I like is SKIP: it's the manual version of context-aware silence. The
+automatic path waits for the thermal array to be sure you're out of bed. SKIP is
+just you telling it directly.
+
+Also added a little display page system so PAGE has somewhere to go, and toast
+messages so you get feedback when a key does something. Still builds at 20.1% RAM.
+
+![what the keys do](images/keymap.png)
+
+## Rendering it properly this time
+
+The earlier renders went through a cloud 3D service. Turned out Blender was
+sitting right there on my machine the whole time with the BlenderMCP addon
+loaded, listening on 127.0.0.1:9876 — I just hadn't looked. Found it with `ss`
+and talked to it over a plain TCP socket.
+
+Which fixed the thing that had been bugging me: the cloud service could only
+import from its own asset catalog, so I'd been *retyping* the FreeCAD dimensions
+into Blender by hand and hoping they matched. Locally, Blender can just read the
+STL off disk. So the render is now the actual exported CAD mesh — 7,628 verts
+straight out of FreeCAD, scaled from mm to m, with the screen, key caps and
+legends added on top.
+
+That means the render and the printable part can't drift apart any more, which
+is what I wanted from the start.
+
+![hero](images/render-hero.png)
+
+**Total time spent: 3 hours**

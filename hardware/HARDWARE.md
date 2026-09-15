@@ -36,7 +36,30 @@ Schematic: `inSomnia.kicad_sch` — ERC clean, 0 violations. PDF: `inSomnia_sche
 The PIR runs from **+5 V** (an HC-SR501 will not trigger reliably at 3.3 V); its output
 swings 0/3.3 V, so it is safe direct to IO14 with no level shifting.
 
-## Keypad
+## Keypad — what the 12 keys do
+
+The board carries 12 keys because the original schematic had 12. For a while
+the firmware used exactly two of them. All twelve now do something; the layout
+matches the enclosure, front row first.
+
+| | col 1 | col 2 | col 3 | col 4 |
+|---|---|---|---|---|
+| **row 1** (front) | `DISMISS` | `SNOOZE` | `LIGHT` | `SKIP` |
+| **row 2** | `OPEN −` | `OPEN +` | `DEAD −` | `DEAD +` |
+| **row 3** (back) | `PAGE` | `SOFT` | `LOUD` | `SAVE` |
+
+Row 1 is what you hit half-asleep: stop it, delay it, dim the display, or tell
+it not to bother tonight. Rows 2 and 3 are setup you do awake — nudge the wake
+window and the hard deadline in 5-minute steps, page through status / window /
+sleep-debt screens, fire a test alarm, and commit settings to flash.
+
+`SKIP` is worth calling out: it is the manual version of context-aware silence.
+The automatic path needs the thermal array to be confident you are out of bed;
+this is you saying so directly.
+
+![keypad legend](../images/keymap.png)
+
+## Keypad wiring
 
 Active **LOW**: each key has a 10k pull-up to 3V3 and its switch shorts to GND.
 

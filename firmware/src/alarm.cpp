@@ -206,6 +206,12 @@ void AlarmEngine::snooze() {
     enter(ALARM_SNOOZED);
 }
 
+void AlarmEngine::skipTonight() {
+    // Manual override: you already know you're getting up, so don't ring at all.
+    recordOutcome(OUTCOME_SUPPRESSED);
+    enter(ALARM_SUPPRESSED);
+}
+
 void AlarmEngine::testGentle() { _testMode = true; enter(ALARM_GENTLE); }
 void AlarmEngine::testHard()   { _testMode = true; enter(ALARM_HARD); }
 void AlarmEngine::stopTest()   { _testMode = false; enter(ALARM_ARMED); }
