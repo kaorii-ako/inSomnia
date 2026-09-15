@@ -1,0 +1,14 @@
+# PlatformIO
+firmware/.pio/
+firmware/.vscode/
+
+# KiCad transient / backup
+hardware/.mcp-backups/
+hardware/.backup-preredo/
+*-backups/
+*.kicad_prl
+fp-info-cache
+*.bak
+*~
+*.kicad_pcb-bak
+*.kicad_sch-bak
