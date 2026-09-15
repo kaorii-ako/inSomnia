@@ -20,6 +20,8 @@ for motion. Drew a first schematic in KiCad around a bare ESP32-C3 chip.
 Everything built. Felt good. Did not test on hardware yet, which turned out
 to matter a lot tomorrow.
 
+![first schematic attempt](images/schematic.png)
+
 **Total time spent: 4 hours**
 
 # September 15: The pin map was broken in three separate ways
@@ -57,6 +59,10 @@ Fixed all of it, pinned the platform version so a clean checkout can't pull a
 core where `ledcSetup` no longer exists, and got it building again. Four bugs
 that would each have cost me an evening with a soldering iron.
 
+![the pin map I got wrong](images/devlog-pinmap.png)
+
+![the bus collision](images/devlog-bus-clash.png)
+
 **Total time spent: 3 hours**
 
 # September 15: Reading actual papers about whether this idea even works
@@ -90,6 +96,8 @@ I also want to be straight about this in the project: Cole-Kripke is a
 weighted moving average with a threshold from 1992. Calling it AI would be
 lying. I'm not shipping a trained model because I have no polysomnography
 ground truth to validate one against.
+
+![what the papers actually say](images/devlog-accuracy.png)
 
 **Total time spent: 3 hours**
 
@@ -157,6 +165,8 @@ their range. The algorithm is validated; my scaling isn't, and pretending
 otherwise would make the output meaningless.
 
 Builds at 15.8% RAM and 13.2% flash, so plenty of room left.
+
+![the state machine](images/devlog-state-machine.png)
 
 **Total time spent: 6 hours**
 
@@ -276,3 +286,54 @@ netlist doesn't change since it was already an I2C header). Firmware builds at
 ![board](images/board-3d-top.png)
 
 **Total time spent: 5 hours**
+
+
+# September 15: Designed the enclosure in FreeCAD
+
+Up to now the "case" only existed as a shape I'd eyeballed in Blender for a
+render. Wanted a real one — something I can actually print — so I built it
+parametrically in FreeCAD and drove every feature off the actual PCB
+coordinates instead of guessing.
+
+Outer shell is 106 x 86 x 54 mm with 2.5 mm walls, which gives a 101 x 81 mm
+cavity for the 100 x 80 board. Wedge profile: 22 mm at the front lip, 54 mm at
+the back, with the display face sloped at 44.1 degrees.
+
+Features all cut from real numbers:
+
+- **Display window 36 x 29 mm.** This was the thing I'd had badly wrong. I'd
+  been modelling something like 62 x 42 in Blender. A 1.8" ST7735's *active
+  area* is only about 35 x 28 mm — the module outline is much bigger than the
+  bit that actually lights up. Window is active area plus 1 mm.
+- **12 keypad holes** at the real SW3..SW14 positions pulled straight from the
+  KiCad file. Had to account for the `SW_PUSH_6mm` footprint anchor not being
+  centred — the body sits at anchor +(3.25, 2.25).
+- Thermal aperture, buzzer grille, rear cable exit, vent slots over the
+  regulator, and four M2 bosses for the board.
+
+![case in FreeCAD](images/case-iso.png)
+
+Hit one genuine conflict. My first flat-top started at y=38 mm, but the front
+row of keys lands at y=39.25 with a 3.5 mm hole radius — so those holes were
+being cut straight through the slope/flat edge and came out chewed. Moved the
+flat forward to y=33 and they clear it now.
+
+![front elevation](images/case-front.png)
+
+One thing I'm not happy about but am leaving alone: **the keypad sits
+right-of-centre**, because that's where it is on the board. The left half is
+full of the ESP32 module, shift registers, regulator and buzzer. It looks a bit
+lopsided. Fixing it properly means re-laying-out the PCB, which I'm not doing
+now — noting it as a v2 change.
+
+Exported STEP and STL. About 58 cm3, so roughly 72 g of PLA at full infill.
+
+Then rebuilt the Blender model against the FreeCAD numbers so the render
+actually matches the thing I'd print, rather than being a separate fiction.
+Worth saying plainly: the two tools aren't linked — I couldn't import the
+FreeCAD mesh into the Blender scene through the tooling I have, so I re-entered
+the same dimensions by hand. If I change the CAD I have to change both.
+
+![render matched to the CAD](images/render-hero.png)
+
+**Total time spent: 4 hours**

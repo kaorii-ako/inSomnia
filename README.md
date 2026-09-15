@@ -107,9 +107,27 @@ few GPIO once an I2S microphone is added.
 Schematic, pin map, BOM and wiring notes: **[`hardware/HARDWARE.md`](hardware/HARDWARE.md)**
 Rendered schematic: `hardware/inSomnia_schematic.pdf`
 
-> The hero image above is a **concept render** of the intended enclosure
-> (Blender/Eevee), not a photo — nothing has been fabricated yet. The board
-> renders in `images/` are generated from the actual KiCad files.
+> The hero image above is a **render**, not a photo — nothing has been
+> fabricated yet. It is built to the same dimensions as the FreeCAD enclosure
+> below, and the board renders in `images/` come from the actual KiCad files.
+
+### Enclosure
+
+Parametric case in FreeCAD: **`hardware/case/`** (STEP + STL + `.FCStd`).
+
+- 106 × 86 × 54 mm outer, 2.5 mm walls, 101 × 81 mm cavity for the board
+- Wedge profile, display face sloped 44.1°
+- **36 × 29 mm display window** — a 1.8" ST7735's *active area* is only ~35 × 28 mm,
+  much smaller than the module outline
+- 12 keypad holes cut at the real SW3–SW14 coordinates from the KiCad file
+- Thermal aperture, buzzer grille, rear cable exit, regulator vents, 4× M2 bosses
+- ~58 cm³ ≈ 72 g of PLA at full infill
+
+The FreeCAD model and the Blender render are **not linked** — the same dimensions
+are entered in both by hand, so a CAD change has to be made twice.
+
+Known cosmetic issue: the keypad sits right-of-centre because that is where it
+is on the PCB. Fixing it means re-laying-out the board; noted for v2.
 
 - 53 components, 41 nets, **schematic ERC clean (0 violations)**
 - 100 × 80 mm two-layer board — **DRC clean, 0 violations, 0 unconnected items**
