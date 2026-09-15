@@ -1,5 +1,7 @@
 # inSomnia
 
+![inSomnia](images/render-hero.png)
+
 An adaptive, context-aware wake clock. Instead of firing at a fixed timestamp,
 it wakes you inside a window at a moment you are already stirring — and if you
 got up before the window even opened, it stays quiet.
@@ -104,6 +106,10 @@ few GPIO once an I2S microphone is added.
 
 Schematic, pin map, BOM and wiring notes: **[`hardware/HARDWARE.md`](hardware/HARDWARE.md)**
 Rendered schematic: `hardware/inSomnia_schematic.pdf`
+
+> The hero image above is a **concept render** of the intended enclosure
+> (Blender/Eevee), not a photo — nothing has been fabricated yet. The board
+> renders in `images/` are generated from the actual KiCad files.
 
 - 53 components, 41 nets, **schematic ERC clean (0 violations)**
 - 100 × 80 mm two-layer board — **DRC clean, 0 violations, 0 unconnected items**
