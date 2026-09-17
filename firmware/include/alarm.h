@@ -78,7 +78,7 @@ private:
     int32_t _minsToOpen;
     int32_t _minsToDeadline;
     int _lastYday;
-    uint16_t _snoozeUntilMin;
+    uint32_t _snoozeUntilMs;
     bool _testMode;
     uint8_t _debtShift;
     NightRecord _lastNight;

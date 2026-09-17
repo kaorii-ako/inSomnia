@@ -105,7 +105,7 @@ None of this is clinical. Without EEG there is no true sleep staging, only an es
 ## PCB
 
 `inSomnia.kicad_pcb` — **100 × 80 mm**, 2 layer, rounded 3 mm corners.
-**DRC clean: 0 violations, 0 unconnected items.**
+**DRC clean: 0 violations, 0 unconnected items.** Re-verified 2026-09-17 via KiCad MCP.
 
 | | |
 |---|---|
@@ -114,18 +114,21 @@ None of this is clinical. Without EEG there is no true sleep staging, only an es
 | Vias | 141 @ 0.30 mm drill / 0.60 mm pad |
 | Copper | GND pour on both layers, islands auto-removed |
 | Clearance | 0.20 mm |
+| Mounting | 100×80 board sits in 101×81 mm case cavity (0.5 mm clearance) + perimeter lip. 4× M2 bosses in the case close with the base plate (M2×8) — no PCB drill holes needed, so DRC stays clean. Add 4× 3.2 mm NPTH at (5,5) etc if you prefer through-screws. |
 
 Fabrication files are in `fab/`, zipped as `inSomnia_gerbers.zip`
-(Gerbers + Excellon drill + drill map + BOM).
+(Gerbers + Excellon drill + drill map + BOM). Also: `images/board-3d-top.png`, `images/board-3d-bottom.png` (renders from the KiCad 3D viewer), `images/schematic.png`.
 
 ### Layout
 
-- **Top-left** — ESP32-S3 module, antenna pointing off the top edge
-- **Top-right** — sensor and display headers in a row (J3 TFT, J4 mic, J5 accel, J6 PIR, J7 USB)
+- **Top-left** — ESP32-S3 module, antenna pointing off the top edge (keepout enforced)
+- **Top-right** — sensor and display headers in a row (J3 TFT, J4 mic, J5 thermal, J6 spare, J7 USB)
 - **Right** — 4 × 3 keypad on a 11 × 12 mm grid
 - **Left-centre** — 74HC165 chain and the 12 key pull-ups
 - **Bottom-left** — 5 V in, regulator, bulk caps
 - **Bottom-centre** — buzzer and its transistor driver
+
+Wiring diagram: `images/schematic.png` + `hardware/inSomnia_schematic.pdf` — all headers are 2.54mm vertical, see pin map above for host-side GPIOs. No wiring harness to the bed (thermal array is on the clock).
 
 ### Two things to know before ordering
 

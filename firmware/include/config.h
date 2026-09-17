@@ -1,6 +1,6 @@
 #pragma once
 
-#define FW_VERSION          "0.1.0-phase1"
+#define FW_VERSION          "0.2.0"
 #define DEVICE_HOSTNAME     "insomnia"
 #define SETUP_AP_SSID       "inSomnia-setup"
 #define SETUP_AP_PASS       "insomnia"

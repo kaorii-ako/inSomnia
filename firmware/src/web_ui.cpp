@@ -385,13 +385,16 @@ void WebUI::handleRoot() {
 
 void WebUI::handleState() {
     struct tm t;
-    bool synced = net.localTime(&t);
+    bool trusted = false;
+    bool hasTime = net.timeForAlarm(&t, &trusted);
     char timeBuf[16] = "--:--:--";
     char dateBuf[40] = "";
-    if (synced) {
+    if (hasTime) {
         strftime(timeBuf, sizeof(timeBuf), "%H:%M:%S", &t);
+        if (!trusted) strncat(timeBuf, "*", sizeof(timeBuf) - strlen(timeBuf) - 1);
         strftime(dateBuf, sizeof(dateBuf), "%A, %d %B %Y", &t);
     }
+    bool synced = trusted;
 
     const NightRecord& n = alarmEngine.lastNight();
 

@@ -129,16 +129,25 @@ static void renderDebtPage() {
 
 static void render() {
     struct tm t;
-    bool synced = net.localTime(&t);
+    bool trusted = false;
+    bool hasTime = net.timeForAlarm(&t, &trusted);
 
     char timeBuf[16];
-    if (synced) strftime(timeBuf, sizeof(timeBuf), "%H:%M:%S", &t);
-    else        snprintf(timeBuf, sizeof(timeBuf), "--:--:--");
+    if (hasTime) {
+        strftime(timeBuf, sizeof(timeBuf), "%H:%M:%S", &t);
+        if (!trusted) {
+            // append * for estimate
+            size_t l = strlen(timeBuf);
+            if (l + 1 < sizeof(timeBuf)) { timeBuf[l] = '*'; timeBuf[l+1] = '\0'; }
+        }
+    } else {
+        snprintf(timeBuf, sizeof(timeBuf), "--:--:--");
+    }
 
     if (strcmp(cacheTime, timeBuf) != 0) {
         strncpy(cacheTime, timeBuf, sizeof(cacheTime) - 1);
         display.fillRow(18, 24, COL_BG);
-        display.drawTextCentered(timeBuf, 18, synced ? COL_TEXT : COL_DIM, 3);
+        display.drawTextCentered(timeBuf, 18, trusted ? COL_TEXT : COL_WARN, 3);
     }
 
     if (forceRedraw) {

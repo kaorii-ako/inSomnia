@@ -8,7 +8,20 @@ static Preferences prefs;
 
 Net::Net()
     : _mode(NET_BOOTING), _timeSynced(false), _mdnsUp(false),
-      _connectStartedMs(0), _lastRetryMs(0) {}
+      _connectStartedMs(0), _lastRetryMs(0), _bootMs(0), _fallbackBaseEpoch(0) {
+    // Fallback base: 2024-01-01 06:00:00 local (fake, advances via millis).
+    // Used only when NTP never syncs — ensures alarm still fires at deadline.
+    struct tm base = {};
+    base.tm_year = 2024 - 1900;
+    base.tm_mon = 0;
+    base.tm_mday = 1;
+    base.tm_hour = 6;
+    base.tm_min = 0;
+    base.tm_sec = 0;
+    base.tm_isdst = -1;
+    _fallbackBaseEpoch = mktime(&base);
+    if (_fallbackBaseEpoch < 0) _fallbackBaseEpoch = 1704088800;
+}
 
 void Net::loadCredentials() {
     prefs.begin(NVS_NAMESPACE, true);
@@ -18,6 +31,7 @@ void Net::loadCredentials() {
 }
 
 void Net::begin() {
+    _bootMs = millis();
     loadCredentials();
     WiFi.persistent(false);
     WiFi.setAutoReconnect(true);
@@ -149,10 +163,45 @@ bool Net::localTime(struct tm* out) const {
     return getLocalTime(out, 0);
 }
 
+bool Net::timeForAlarm(struct tm* out, bool* trusted) const {
+    if (trusted) *trusted = _timeSynced;
+    if (_timeSynced && getLocalTime(out, 0) && out->tm_year > (2020 - 1900)) {
+        return true;
+    }
+    // Fallback: free-running clock from boot. Advances via millis() so the
+    // hard deadline always arrives even fully offline.
+    if (!out) return false;
+    uint32_t elapsedSec = (millis() - _bootMs) / 1000;
+    time_t est = _fallbackBaseEpoch + (time_t)elapsedSec;
+    // Apply TZ offset manually via localtime_r on the estimated epoch.
+    // Use localtime_r which honors TZ env set by configTzTime earlier.
+    struct tm* tp = localtime_r(&est, out);
+    if (!tp) {
+        // ultra-fallback: synthesize directly
+        out->tm_year = 2024 - 1900;
+        out->tm_mon = 0;
+        out->tm_mday = 1;
+        out->tm_hour = (6 + (elapsedSec / 3600)) % 24;
+        out->tm_min = (elapsedSec / 60) % 60;
+        out->tm_sec = elapsedSec % 60;
+        out->tm_yday = 0;
+        out->tm_isdst = -1;
+    }
+    // yday needs correct value even on synthetic path
+    if (out->tm_yday < 0) out->tm_yday = 0;
+    return true;
+}
+
 String Net::timeString(const char* fmt) const {
     struct tm t;
-    if (!localTime(&t)) return String("--:--:--");
+    bool trusted = false;
+    if (!timeForAlarm(&t, &trusted)) return String("--:--:--");
     char buf[32];
     strftime(buf, sizeof(buf), fmt, &t);
+    if (!trusted) {
+        // indicate estimate
+        String s(buf);
+        return s + "*";
+    }
     return String(buf);
 }

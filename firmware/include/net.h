@@ -34,6 +34,11 @@ public:
 
     bool timeSynced() const { return _timeSynced; }
     bool localTime(struct tm* out) const;
+    // Always returns a usable wall time even when NTP is offline.
+    // If NTP never synced, synthesizes a free-running clock from boot millis
+    // so the alarm still fires at the hard deadline (fail-safe, not fail-silent).
+    bool timeForAlarm(struct tm* out, bool* trusted = nullptr) const;
+    bool isTimeTrusted() const { return _timeSynced; }
     String timeString(const char* fmt = "%H:%M:%S") const;
 
 private:
@@ -49,6 +54,8 @@ private:
     bool _mdnsUp;
     uint32_t _connectStartedMs;
     uint32_t _lastRetryMs;
+    uint32_t _bootMs;
+    time_t _fallbackBaseEpoch;
 };
 
 extern Net net;

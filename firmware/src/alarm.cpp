@@ -22,7 +22,7 @@ static Preferences aprefs;
 AlarmEngine::AlarmEngine()
     : _phase(ALARM_IDLE), _outcome(OUTCOME_NONE), _failsafe(false), _volume(0),
       _phaseEnteredMs(0), _lastBeepMs(0), _beepOn(false), _minsToOpen(0),
-      _minsToDeadline(0), _lastYday(-1), _snoozeUntilMin(0), _testMode(false), _debtShift(0) {
+      _minsToDeadline(0), _lastYday(-1), _snoozeUntilMs(0), _testMode(false), _debtShift(0) {
     memset(&_lastNight, 0, sizeof(_lastNight));
 }
 
@@ -53,11 +53,20 @@ void AlarmEngine::update() {
     const Settings& cfg = settings.get();
 
     struct tm t;
-    if (!net.localTime(&t)) {
-        // No trusted clock yet: never fire, never claim suppression.
+    bool trusted = false;
+    if (!net.timeForAlarm(&t, &trusted)) {
         _failsafe = true;
         if (_phase == ALARM_GENTLE || _phase == ALARM_HARD) driveOutput();
         return;
+    }
+    if (!trusted) {
+        // Offline estimate — still run the alarm, but mark degraded so debug is honest.
+        // This is what makes the clock fail-safe, not fail-silent, when offline.
+        static uint32_t lastWarn = 0;
+        if (millis() - lastWarn > 60000) {
+            lastWarn = millis();
+            Serial.println("[alarm] time estimate (NTP not yet synced), running on fallback clock");
+        }
     }
 
     uint16_t nowMin = t.tm_hour * 60 + t.tm_min;
@@ -65,7 +74,7 @@ void AlarmEngine::update() {
     if (_lastYday != t.tm_yday) {
         _lastYday = t.tm_yday;
         _outcome = OUTCOME_NONE;
-        _snoozeUntilMin = 0;
+        _snoozeUntilMs = 0;
         _testMode = false;
         sleepModel.resetNight();
         enter(ALARM_ARMED);
@@ -135,7 +144,7 @@ void AlarmEngine::update() {
             break;
 
         case ALARM_SNOOZED:
-            if (nowMin >= _snoozeUntilMin) enter(ALARM_HARD);
+            if (millis() >= _snoozeUntilMs) enter(ALARM_HARD);
             break;
 
         case ALARM_DONE:
@@ -199,10 +208,7 @@ void AlarmEngine::dismiss() {
 void AlarmEngine::snooze() {
     if (_testMode) { stopTest(); return; }
     if (_phase != ALARM_GENTLE && _phase != ALARM_HARD) return;
-    struct tm t;
-    if (!net.localTime(&t)) return;
-    uint16_t nowMin = t.tm_hour * 60 + t.tm_min;
-    _snoozeUntilMin = nowMin + settings.get().snoozeMin;
+    _snoozeUntilMs = millis() + (uint32_t)settings.get().snoozeMin * 60000UL;
     enter(ALARM_SNOOZED);
 }
 
@@ -224,7 +230,7 @@ void AlarmEngine::recordOutcome(NightOutcome o) {
 
     _lastNight.outcome = (uint8_t)o;
     _lastNight.epochStamp = (uint32_t)time(NULL);
-    if (net.localTime(&t)) {
+    if (net.timeForAlarm(&t)) {
         _lastNight.wokeHour = t.tm_hour;
         _lastNight.wokeMin = t.tm_min;
     }
@@ -234,7 +240,7 @@ void AlarmEngine::recordOutcome(NightOutcome o) {
         _lastNight.wasoMin = st.wakeAfterSleepOnsetMin;
         _lastNight.solMin = st.sleepOnsetLatencyMin;
         struct tm t2;
-        if (net.localTime(&t2))
+        if (net.timeForAlarm(&t2))
             sleepDebt.recordNight((uint16_t)t2.tm_yday, st.totalSleepMin,
                                   st.sleepEfficiencyPct);
     }
